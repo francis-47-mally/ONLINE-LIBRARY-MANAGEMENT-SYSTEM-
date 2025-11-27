@@ -1,0 +1,73 @@
+PRAGMA foreign_keys=ON;
+
+CREATE TABLE users (
+  user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL, -- 'librarian' | 'member' | 'admin'
+  email TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE members (
+  member_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  name TEXT NOT NULL,
+  email TEXT,
+  membership_id TEXT UNIQUE,
+  phone TEXT,
+  address TEXT,
+  status TEXT DEFAULT 'active',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+CREATE TABLE books (
+  book_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  author TEXT,
+  isbn TEXT UNIQUE,
+  publisher TEXT,
+  published_year INTEGER,
+  genre TEXT,
+  total_copies INTEGER DEFAULT 1,
+  available_copies INTEGER DEFAULT 1,
+  added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE transactions (
+  tx_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  book_id INTEGER NOT NULL,
+  member_id INTEGER NOT NULL,
+  tx_type TEXT NOT NULL, -- 'borrow' | 'return'
+  borrow_date DATE,
+  due_date DATE,
+  return_date DATE,
+  fine REAL DEFAULT 0,
+  status TEXT DEFAULT 'open',
+  FOREIGN KEY(book_id) REFERENCES books(book_id),
+  FOREIGN KEY(member_id) REFERENCES members(member_id)
+);
+
+CREATE TABLE notifications (
+  notif_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT,
+  body TEXT,
+  recipient_user_id INTEGER,
+  channel TEXT DEFAULT 'email',
+  sent_at DATETIME,
+  read INTEGER DEFAULT 0,
+  FOREIGN KEY(recipient_user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE audit_logs (
+  log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  action TEXT,
+  user_id INTEGER,
+  details TEXT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(user_id)
+);
+
+-- seed admin (password: adminpass hashed)
+INSERT INTO users (username, password_hash, role, email) VALUES ('admin','$2b$10$TfJ5u5lX2x7y3k3a9V7rUeQ8q9z6Qf8Y6d1wTnQxG6yQK/3u5Yz2G','admin','admin@example.com');
