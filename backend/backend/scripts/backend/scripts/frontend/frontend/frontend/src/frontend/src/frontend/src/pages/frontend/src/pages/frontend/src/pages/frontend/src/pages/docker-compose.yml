@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      - JWT_SECRET=change_this_secret
+      - DB_PATH=/data/olms.sqlite
+    volumes:
+      - ./olms.sqlite:/data/olms.sqlite
+    restart: unless-stopped
